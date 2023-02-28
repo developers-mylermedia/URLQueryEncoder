@@ -32,6 +32,14 @@ public final class URLQueryEncoder {
         case custom((Date) -> String)
     }
 
+    public var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
+
+    public enum KeyEncodingStrategy {
+        case useDefaultKeys
+        case convertToSnakeCase
+        case custom((_ codingPath: [CodingKey]) -> CodingKey)
+    }
+
     public private(set) var queryItems: [URLQueryItem] = []
 
     public var items: [(String, String?)] {
@@ -199,7 +207,19 @@ private extension URLQueryEncoder {
         guard !codingPath.isEmpty else {
             return // Should never happen
         }
-        let key = codingPath[0].stringValue
+
+        let key: String
+        switch keyEncodingStrategy {
+        case .useDefaultKeys:
+            key = codingPath[0].stringValue
+        case .convertToSnakeCase:
+            key = codingPath[0].stringValue.replacing(#/([a-z])([A-Z])/#) {
+                "\($0.output.1)_\($0.output.2.lowercased())"
+            }
+        case let .custom(custom):
+            key = custom(codingPath).stringValue
+        }
+
         if _explode {
             if codingPath.count == 2 { // Encoding an object
                 if _isDeepObject {
