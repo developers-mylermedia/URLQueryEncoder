@@ -32,11 +32,17 @@ public final class URLQueryEncoder {
         case custom((Date) -> String)
     }
 
+    /// By default, `.useDefaultKeys`.
     public var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
 
+    /// The strategy to use for encoding keys.
     public enum KeyEncodingStrategy {
+        /// Use the keys specified by each type. This is the default strategy.
         case useDefaultKeys
+        /// Convert from "camelCaseKeys" to "snake_case_keys" before writing a key to JSON payload.
         case convertToSnakeCase
+        /// Provide a custom conversion to the key in the encoded JSON from the keys specified by the encoded types.
+        /// The full path to the current encoding position is provided for context (in case you need to locate this key within the payload). The returned key is used in place of the last component in the coding path before encoding.
         case custom((_ codingPath: [CodingKey]) -> CodingKey)
     }
 
@@ -74,13 +80,13 @@ public final class URLQueryEncoder {
 
     /// Encodes value for the given key.
     @discardableResult
-    public func encode<T: Encodable>(_ value: T, forKey key: String) -> Self {
-        encode(value, forKey: key, explode: nil, delimiter: nil, isDeepObject: nil)
+    public func encode<T: Encodable>(_ value: T) -> Self {
+        encode(value, explode: nil, delimiter: nil, isDeepObject: nil)
     }
 
     /// Encodes value for the given key.
     @discardableResult
-    public func encode<T: Encodable>(_ value: T, forKey key: String, explode: Bool? = nil, delimiter: String? = nil, isDeepObject: Bool? = nil) -> Self {
+    public func encode<T: Encodable>(_ value: T, explode: Bool? = nil, delimiter: String? = nil, isDeepObject: Bool? = nil) -> Self {
         // Temporary override the settings to the duration of the call
         _explode = explode ?? self.explode
         _delimiter = delimiter ?? self.delimiter
@@ -88,7 +94,7 @@ public final class URLQueryEncoder {
 
         let encoder = _URLQueryEncoder(encoder: self)
         do {
-            try [key: value].encode(to: encoder)
+            try value.encode(to: encoder)
         } catch {
             // Assume that encoding to String never fails
             assertionFailure("URL encoding failed with an error: \(error)")
@@ -98,7 +104,7 @@ public final class URLQueryEncoder {
     
     public static func encode<T: Encodable>(_ body: T) -> URLQueryEncoder {
         let encoder = URLQueryEncoder()
-        encoder.encode(body, forKey: "value")
+        encoder.encode(["value": body])
         return encoder
     }
 }
