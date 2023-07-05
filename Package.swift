@@ -7,7 +7,7 @@ let package = Package(
     name: "URLQueryEncoder",
     platforms: [
         .macOS(.v13),
-        .iOS(.v16),
+        .iOS(.v13),
         .tvOS(.v16),
         .watchOS(.v9)
     ],
