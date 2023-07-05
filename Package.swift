@@ -14,17 +14,16 @@ let package = Package(
     products: [
         .library(
             name: "URLQueryEncoder",
-            targets: ["URLQueryEncoder"]
-        ),
+            targets: ["URLQueryEncoder"])
+    ],
+    dependencies: [
+        .package(url: "https://github.com/developers-mylermedia/swift-coding-guidelines", from: "1.1.22")
     ],
     targets: [
         .target(
             name: "URLQueryEncoder",
-            dependencies: []
-        ),
+            dependencies: []),
         .testTarget(
             name: "URLQueryEncoderTests",
-            dependencies: ["URLQueryEncoder"]
-        ),
-    ]
-)
+            dependencies: ["URLQueryEncoder"])
+    ])
