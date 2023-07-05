@@ -238,8 +238,16 @@ extension URLQueryEncoder {
         case .useDefaultKeys:
             key = codingPath[0].stringValue
         case .convertToSnakeCase:
-            key = codingPath[0].stringValue.replacing(#/([a-z])([A-Z])/#) {
-                "\($0.output.1)_\($0.output.2.lowercased())"
+            // TODO: this pattern is flawed so replace it if we ever need it
+            // https://gist.github.com/dmsl1805/ad9a14b127d0409cf9621dc13d237457
+            if #available(iOS 16.0, *) {
+                key = codingPath[0].stringValue.replacing(#/([a-z])([A-Z])/#) {
+                    "\($0.output.1)_\($0.output.2.lowercased())"
+                }
+            } else {
+                let regex = try? NSRegularExpression(pattern: "([a-z])([A-Z])", options: [])
+                let range = NSRange(location: 0, length: codingPath[0].stringValue.count)
+                key = regex?.stringByReplacingMatches(in: codingPath[0].stringValue, options: [],  range: range, withTemplate: "$1_$2") ?? codingPath[0].stringValue
             }
         case .custom(let custom):
             key = custom(codingPath).stringValue
